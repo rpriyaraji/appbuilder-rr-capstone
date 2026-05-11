@@ -1,80 +1,107 @@
-# 998VioletGalliform
+# Employee Directory App
+### Adobe App Builder Capstone — 998VioletGalliform
 
-Welcome to my Adobe I/O Application!
+A full-stack web application built on **Adobe App Builder** that manages an employee directory with AI-generated avatars powered by **Adobe Firefly**.
 
-## Setup
+**Production URL:** https://916516-998violetgalliform.adobeio-static.net/index.html
 
-- Populate the `.env` file in the project root and fill it as shown [below](#env)
+---
 
-## Local Dev
+## Features
 
-- `aio app run` to start your local Dev server
-- App will run on `localhost:9080` by default
+- **Add Employee** — form with Name, Role, and Department fields
+- **Live Dashboard** — table showing all employees with role badges
+- **AI Avatars** — click "Generate Avatar" to create a Firefly AI headshot per employee
+- **Serverless Backend** — Adobe I/O Runtime actions (Node.js 22)
+- **Adobe Red Branding** — clean professional UI (#e03000)
 
-By default the UI will be served locally but actions will be deployed and served from Adobe I/O Runtime. To run your actions locally use the `aio app dev` option.
+---
 
-For more information on the difference between `aio app run` and `aio app dev`, see [here](https://developer.adobe.com/app-builder/docs/guides/development/#aio-app-dev-vs-aio-app-run)
+## Tech Stack
 
-## Test & Coverage
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 16, inline styles, Adobe CDN |
+| Backend | Adobe I/O Runtime (Node.js 22) |
+| AI | Adobe Firefly Services API v3 (text-to-image) |
+| Auth | Adobe IMS client credentials OAuth |
+| CLI | @adobe/aio-cli v11 |
 
-- Run `aio app test` to run unit tests for ui and actions
-- Run `aio app test --e2e` to run e2e tests
+---
 
-## Deploy & Cleanup
+## Project Structure
 
-- `aio app deploy` to build and deploy all actions on Runtime and static files to CDN
-- `aio app undeploy` to undeploy the app
+```
+actions/
+├── generic/index.js          # GET/POST employees
+├── firefly/index.js          # Firefly AI avatar generation
+├── publish-events/index.js   # Adobe I/O Events
+└── utils.js                  # Shared utilities
 
-## Config
+web-src/src/components/
+└── App.js                    # Main React UI (form + table + avatars)
 
-### `.env`
+app.config.yaml               # Action definitions & runtime config
+INSTRUCTIONS.md               # Full setup, deploy & testing guide
+```
 
-You can generate this file using the command `aio app use`. 
+---
+
+## Quick Start
 
 ```bash
-# This file must **not** be committed to source control
-
-## please provide your Adobe I/O Runtime credentials
-# AIO_RUNTIME_AUTH=
-# AIO_RUNTIME_NAMESPACE=
+npm install
+aio login
+aio app use -w Production
+aio app dev
 ```
 
-### `app.config.yaml`
+Open https://localhost:9080 — accept the self-signed cert when prompted.
 
-- Main configuration file that defines an application's implementation. 
-- More information on this file, application configuration, and extension configuration 
-  can be found [here](https://developer.adobe.com/app-builder/docs/guides/configuration/#appconfigyaml)
+See [INSTRUCTIONS.md](INSTRUCTIONS.md) for full setup, .env config, and deployment steps.
 
-#### Action Dependencies
+---
 
-- You have two options to resolve your actions' dependencies:
+## API Reference
 
-  1. **Packaged action file**: Add your action's dependencies to the root
-   `package.json` and install them using `npm install`. Then set the `function`
-   field in `app.config.yaml` to point to the **entry file** of your action
-   folder. We will use `webpack` to package your code and dependencies into a
-   single minified js file. The action will then be deployed as a single file.
-   Use this method if you want to reduce the size of your actions.
-
-  2. **Zipped action folder**: In the folder containing the action code add a
-     `package.json` with the action's dependencies. Then set the `function`
-     field in `app.config.yaml` to point to the **folder** of that action. We will
-     install the required dependencies within that directory and zip the folder
-     before deploying it as a zipped action. Use this method if you want to keep
-     your action's dependencies separated.
-
-## Debugging in VS Code
-
-While running your local server (`aio app dev`), both UI and actions can be debugged. To do so follow the instructions [here](https://developer.adobe.com/app-builder/docs/guides/development/#debugging)
-
-## Typescript support for UI
-
-To use typescript use `.tsx` extension for react components and add a `tsconfig.json` 
-and make sure you have the below config added
+**GET /generic** — fetch all employees
+```json
+{ "employees": [{ "id": 1, "name": "John Doe", "role": "Engineer", "department": "Technology" }] }
 ```
- {
-  "compilerOptions": {
-      "jsx": "react"
-    }
-  } 
+
+**POST /generic** — add an employee
+```json
+// body:     { "name": "...", "role": "...", "department": "..." }
+// response: { "employee": { "id": 4, "name": "...", ... } }
 ```
+
+**POST /firefly** — generate AI avatar
+```json
+// body:     { "prompt": "professional headshot of an Engineer in Technology department" }
+// response: { "imageUrl": "https://...", "prompt": "..." }
+```
+
+---
+
+## Deploy
+
+```bash
+aio app deploy --force-deploy
+```
+
+---
+
+## Architecture
+
+```
+Browser
+  ├── GET  /generic  ──► generic action  ──► employee list
+  ├── POST /generic  ──► generic action  ──► add employee
+  └── POST /firefly  ──► firefly action
+                              ├── Adobe IMS  (get OAuth token)
+                              └── Firefly v3 (generate 1024x1024 image)
+```
+
+---
+
+*Built with Adobe App Builder · Adobe I/O Runtime · Adobe Firefly*
