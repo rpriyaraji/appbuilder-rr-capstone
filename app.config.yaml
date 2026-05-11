@@ -1,0 +1,38 @@
+application:
+  actions: actions
+  web: web-src
+  runtimeManifest:
+    packages:
+      appbuilder-rr-capstone:
+        license: Apache-2.0
+        actions:
+          generic:
+            function: actions/generic/index.js
+            web: 'yes'
+            runtime: nodejs:22
+            inputs:
+              LOG_LEVEL: debug
+            annotations:
+              require-adobe-auth: false
+              final: true
+          firefly:
+            function: actions/firefly/index.js
+            web: 'yes'
+            runtime: nodejs:22
+            inputs:
+              LOG_LEVEL: debug
+              FIREFLY_CLIENT_ID: $FIREFLY_CLIENT_ID
+              FIREFLY_CLIENT_SECRET: $FIREFLY_CLIENT_SECRET
+            annotations:
+              require-adobe-auth: false
+              final: true
+          publish-events:
+            function: actions/publish-events/index.js
+            web: 'yes'
+            runtime: nodejs:22
+            inputs:
+              LOG_LEVEL: debug
+              apiKey: $SERVICE_API_KEY
+            annotations:
+              require-adobe-auth: true
+              final: true
